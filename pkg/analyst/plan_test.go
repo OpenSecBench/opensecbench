@@ -848,7 +848,9 @@ func TestExpandStepsPreservesSkipIf(t *testing.T) {
 
 	app, _ := db.CreateApplication(ctx, projectID, "myapp")
 	for _, loc := range []string{"/repos/a", "/repos/b"} {
-		db.CreateAsset(ctx, store.NewAsset{ApplicationID: app.ID, Type: model.AssetSourceRepo, Location: loc})
+		if _, err := db.CreateAsset(ctx, store.NewAsset{ApplicationID: app.ID, Type: model.AssetSourceRepo, Location: loc}); err != nil {
+			t.Fatal(err)
+		}
 	}
 
 	steps := []PlaybookStep{
@@ -883,10 +885,12 @@ func TestSkipIfNoGoModules(t *testing.T) {
 
 	// Create a source_repo asset with no Go ecosystem (e.g. Python only).
 	app, _ := db.CreateApplication(ctx, projectID, "myapp")
-	db.CreateAsset(ctx, store.NewAsset{
+	if _, err := db.CreateAsset(ctx, store.NewAsset{
 		ApplicationID: app.ID, Type: model.AssetSourceRepo,
 		Location: "/repos/python-svc",
-	})
+	}); err != nil {
+		t.Fatal(err)
+	}
 
 	plan := model.Plan{ProjectID: projectID, PlaybookID: "custom", Steps: []model.PlanStep{
 		{Key: "govulncheck", Profile: "report-writer", Instruction: "run govulncheck", SkipIf: "no_go_modules"},
@@ -927,10 +931,12 @@ func TestSkipIfConditionNotMet(t *testing.T) {
 	// for go.mod on disk. Since the path won't exist in tests, we'll test the no_assets condition
 	// instead — it's the same code path.
 
-	db.CreateAsset(ctx, store.NewAsset{
+	if _, err := db.CreateAsset(ctx, store.NewAsset{
 		ApplicationID: app.ID, Type: model.AssetSourceRepo,
 		Location: "/repos/go-svc",
-	})
+	}); err != nil {
+		t.Fatal(err)
+	}
 
 	plan := model.Plan{ProjectID: projectID, PlaybookID: "custom", Steps: []model.PlanStep{
 		{Key: "scan", Profile: "report-writer", Instruction: "scan", SkipIf: "no_assets:source_repo"},

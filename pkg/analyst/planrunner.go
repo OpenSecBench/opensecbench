@@ -41,12 +41,6 @@ func clip(s string, max int) string {
 	return s
 }
 
-// formatActivity renders one of a sub-agent's tool turns into a JSON line for the step's live activity
-// trail: the agent's commentary, the tool, and previews of its args and result/error. One line per turn.
-func formatActivity(st agent.Step) string {
-	return formatActivityAt(st, 0)
-}
-
 func formatActivityAt(st agent.Step, depth int) string {
 	e := activityEntry{Kind: "ok", Tool: st.Call.Tool, Note: clip(st.Note, 800), Depth: depth}
 	if len(st.Call.Args) > 0 {
